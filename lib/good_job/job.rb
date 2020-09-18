@@ -191,37 +191,25 @@ module GoodJob
 
       result, rescued_error = execute
 
-      retry_or_discard_error = GoodJob::CurrentExecution.error_on_retry ||
-                               GoodJob::CurrentExecution.error_on_discard
+      result_error = nil
+      result, result_error = nil, result if result.is_a?(Exception) # rubocop:disable Style/ParallelAssignment
 
-      error = nil
-      if rescued_error
-        error = rescued_error
-      elsif result.is_a?(Exception)
-        error = result
-        result = nil
-      elsif retry_or_discard_error
-        error = retry_or_discard_error
-      end
+      job_error = rescued_error ||
+                  result_error ||
+                  GoodJob::CurrentExecution.error_on_retry ||
+                  GoodJob::CurrentExecution.error_on_discard
 
-      error_message = "#{error.class}: #{error.message}" if error
-      self.error = error_message
+      self.error = "#{job_error.class}: #{job_error.message}" if job_error
 
       if rescued_error && GoodJob.reperform_jobs_on_standard_error
         save!
-      elsif rescued_error && [:always, :on_error].include?(GoodJob.preserve_job_records)
+      elsif GoodJob.preserve_job_records == :always || (GoodJob.preserve_job_records == :on_error && rescued_error)
         update!(finished_at: Time.current)
       else
-        self.finished_at = Time.current
-
-        if GoodJob.preserve_job_records == :always
-          save!
-        else
-          destroy!
-        end
+        destroy!
       end
 
-      [result, error]
+      [result, job_error]
     end
 
     private
