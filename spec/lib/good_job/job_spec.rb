@@ -208,7 +208,7 @@ RSpec.describe GoodJob::Job do
     end
 
     it 'can preserve the job' do
-      allow(GoodJob).to receive(:preserve_job_records).and_return(true)
+      allow(GoodJob).to receive(:preserve_job_records).and_return(:always)
 
       good_job.perform
       expect(good_job.reload).to have_attributes(
@@ -243,7 +243,7 @@ RSpec.describe GoodJob::Job do
       end
 
       it 'can preserve the job' do
-        allow(GoodJob).to receive(:preserve_job_records).and_return(true)
+        allow(GoodJob).to receive(:preserve_job_records).and_return(:always)
 
         good_job.perform
 
@@ -272,7 +272,7 @@ RSpec.describe GoodJob::Job do
           end
 
           it 'leaves the job record unfinished' do
-            allow(GoodJob).to receive(:preserve_job_records).and_return(true)
+            allow(GoodJob).to receive(:preserve_job_records).and_return(:always)
 
             good_job.perform
 
@@ -284,7 +284,7 @@ RSpec.describe GoodJob::Job do
           end
 
           it 'does not destroy the job record' do
-            allow(GoodJob).to receive(:preserve_job_records).and_return(false)
+            allow(GoodJob).to receive(:preserve_job_records).and_return(:never)
 
             good_job.perform
             expect { good_job.reload }.not_to raise_error
@@ -297,14 +297,14 @@ RSpec.describe GoodJob::Job do
           end
 
           it 'destroys the job' do
-            allow(GoodJob).to receive(:preserve_job_records).and_return(false)
+            allow(GoodJob).to receive(:preserve_job_records).and_return(:never)
 
             good_job.perform
             expect { good_job.reload }.to raise_error ActiveRecord::RecordNotFound
           end
 
           it 'can preserve the job' do
-            allow(GoodJob).to receive(:preserve_job_records).and_return(true)
+            allow(GoodJob).to receive(:preserve_job_records).and_return(:always)
 
             good_job.perform
 

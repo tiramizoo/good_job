@@ -75,7 +75,7 @@ module GoodJob
       By default, GoodJob deletes job records when the job is performed and this
       command is not necessary.
 
-      However, when `GoodJob.preserve_job_records = true`, the jobs will be
+      However, when `GoodJob.preserve_job_records = :always`, the jobs will be
       preserved in the database. This is useful when wanting to analyze or
       inspect job performance.
 

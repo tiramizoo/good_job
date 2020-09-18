@@ -29,13 +29,26 @@ module GoodJob
 
   # @!attribute [rw] preserve_job_records
   #   @!scope class
-  #   Whether to preserve job records in the database after they have finished (default: +false+).
+  #   Whether to preserve job records in the database after they have finished (default: +:never+).
   #   By default, GoodJob deletes job records after the job is completed successfully.
-  #   If you want to preserve jobs for latter inspection, set this to +true+.
+  #   If you want to preserve jobs for latter inspection, set this to +:always+.
   #   If you want to preserve only jobs that finished with error for latter inspection, set this to +:on_error+.
-  #   If +true+, you will need to clean out jobs using the +good_job cleanup_preserved_jobs+ CLI command.
-  #   @return [Boolean]
-  mattr_accessor :preserve_job_records, default: false
+  #   If +:always+, you will need to clean out jobs using the +good_job cleanup_preserved_jobs+ CLI command.
+  #   @return [Symbol]
+  mattr_reader :preserve_job_records, default: :never
+
+  def self.preserve_job_records=(value)
+    case value
+    when true
+      ActiveSupport::Deprecation.warn("setting 'true' on GoodJob.preserve_job_records is deprecated. Please use ':always'")
+      @@preserve_job_records = :always # rubocop:disable Style/ClassVars
+    when false, nil
+      ActiveSupport::Deprecation.warn("setting 'false' or 'nil' on GoodJob.preserve_job_records is deprecated. Please use ':never'")
+      @@preserve_job_records = :never # rubocop:disable Style/ClassVars
+    else
+      @@preserve_job_records = value # rubocop:disable Style/ClassVars
+    end
+  end
 
   # @!attribute [rw] reperform_jobs_on_standard_error
   #   @!scope class

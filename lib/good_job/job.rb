@@ -187,7 +187,7 @@ module GoodJob
       GoodJob::CurrentExecution.reset
 
       self.performed_at = Time.current
-      save! if GoodJob.preserve_job_records
+      save! if [:always, :on_error].include?(GoodJob.preserve_job_records)
 
       result, rescued_error = execute
 
@@ -209,12 +209,12 @@ module GoodJob
 
       if rescued_error && GoodJob.reperform_jobs_on_standard_error
         save!
-      elsif rescued_error && GoodJob.preserve_job_records == :on_error
+      elsif rescued_error && [:always, :on_error].include?(GoodJob.preserve_job_records)
         update!(finished_at: Time.current)
       else
         self.finished_at = Time.current
 
-        if GoodJob.preserve_job_records == true
+        if GoodJob.preserve_job_records == :always
           save!
         else
           destroy!

@@ -170,7 +170,7 @@ Deletes preserved job records.
 By default, GoodJob deletes job records when the job is performed and this
 command is not necessary.
 
-However, when `GoodJob.preserve_job_records = true`, the jobs will be
+However, when `GoodJob.preserve_job_records = :always`, the jobs will be
 preserved in the database. This is useful when wanting to analyze or
 inspect job performance.
 
@@ -208,7 +208,7 @@ config.active_job.queue_adapter = GoodJob::Adapter.new(execution_mode: :external
 Good Job’s general behavior can also be configured via several attributes directly on the `GoodJob` module:
 
 - **`GoodJob.logger`** ([Rails Logger](https://api.rubyonrails.org/classes/ActiveSupport/Logger.html)) lets you set a custom logger for GoodJob. It should be an instance of a Rails `Logger`.
-- **`GoodJob.preserve_job_records`** (boolean) keeps job records in your database even after jobs are completed. (Default: `false`)
+- **`GoodJob.preserve_job_records`** (symbol) keeps job records in your database even after jobs are completed. Options: `:never, :always, :on_error` (Default: `:never`)
 - **`GoodJob.reperform_jobs_on_standard_error`** (boolean) causes jobs to be re-queued and retried if they raise an instance of `StandardError`. Instances of `Exception`, like SIGINT, will *always* be retried, regardless of this attribute’s value. (Default: `true`)
 - **`GoodJob.on_thread_error`** (proc, lambda, or callable) will be called when an Exception. It can be useful for logging errors to bug tracking services, like Sentry or Airbrake.
 
@@ -216,7 +216,7 @@ You’ll generally want to configure these in `config/initializers/good_job.rb`,
 
 ```ruby
 # config/initializers/good_job.rb
-GoodJob.preserve_job_records = true
+GoodJob.preserve_job_records = :always
 GoodJob.reperform_jobs_on_standard_error = false
 GoodJob.on_thread_error = -> (exception) { Raven.capture_exception(exception) }
 ```
@@ -465,7 +465,7 @@ To preserve job records for later inspection, set an initializer:
 
 ```ruby
 # config/initializers/good_job.rb
-GoodJob.preserve_job_records = true
+GoodJob.preserve_job_records = :always
 ```
 
 It is also necessary to delete these preserved jobs from the database after a certain time period:
